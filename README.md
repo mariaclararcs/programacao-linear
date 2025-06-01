@@ -1,23 +1,33 @@
-### Instruções para Execução
+# 🔍 Otimização de Rotas - Grafo
 
-1. Pré-requisitos:
-- Node.js instalado (versão 16 ou superior)
-- npm ou yarn
+## Instruções para Execução
 
-2. Instalação:
+### Requisitos
+
+- Versão do **Node.js**: 16 ou superior.
+- npm ou yarn.
+
+💻 **Instalação:**
+
 - Abra o terminal na pasta do projeto
 - Execute: npm install ou yarn install
 
-3. Execução:
-- Execute: npm run dev ou yarn dev
-- Acesse: http://localhost:3000 no navegador
+▶️ **Como executar:**
 
-4. Uso:
+- No terminal na pasta do projeto execute: npm run dev ou yarn dev
+- Acesse: (http://localhost:3000 no navegador)
+
 - Na tela principal, selecione uma das opções:
   * Métodos Básicos: para gerar problemas de otimização de rotas
   * Sobre o Sistema: para informações sobre o projeto
+- Insira um valor para a quantidade de nós no campo **Tamanho do Problema**.
+- Clique em **Gerar Problema** para visualizar o grafo gerado.
+- Escolha um método no campo **Selecione um método**.
+- Clique em **Executar Método** para exibir os resultados.
+- Para gerar e baixar o relatório dos resultados, clique em **Gerar Relatório PDF**.
 
-5. Observações:
+**Observações:**
+
 - A funcionalidadesde Algoritmos Genéticos estará desabilitada nesta versão
 - O tamanho padrão do problema é 5 nós
 
