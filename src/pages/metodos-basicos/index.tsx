@@ -13,20 +13,20 @@ type ResultadoMetodo = {
 }
 
 export default function MetodosBasicos() {
-  const [inputValue, setInputValue] = useState<string>('5')
+  const [valorInput, setValorInput] = useState<string>('5')
   const [tamanhoProblemaAtual, setTamanhoProblemaAtual] = useState<number | null>(null)
   const [resultados, setResultados] = useState<string | null>(null)
   const [grafoGerado, setGrafoGerado] = useState<boolean>(false)
   const [conexoes, setConexoes] = useState<number[][]>([])
-  const [shouldSaveGraph, setShouldSaveGraph] = useState(false)
+  const [deveSalvarGrafo, setDeveSalvarGrafo] = useState(false)
   const [metodoSelecionado, setMetodoSelecionado] = useState<string>('')
   const [resultadosMetodos, setResultadosMetodos] = useState<ResultadoMetodo[]>([])
   const [executando, setExecutando] = useState<boolean>(false)
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMudancaInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     if (value === '' || /^[0-9\b]+$/.test(value)) {
-      setInputValue(value)
+      setValorInput(value)
       if (grafoGerado) {
         setGrafoGerado(false)
         setTamanhoProblemaAtual(null)
@@ -35,23 +35,23 @@ export default function MetodosBasicos() {
   }
 
   const handleGerarProblema = () => {
-    const finalValue = Math.min(20, Math.max(2, Number(inputValue) || 5))
+    const finalValue = Math.min(20, Math.max(2, Number(valorInput) || 5))
     setTamanhoProblemaAtual(finalValue)
     setResultados(`Problema gerado com ${finalValue} nós`)
     setGrafoGerado(true)
-    setShouldSaveGraph(true)
+    setDeveSalvarGrafo(true)
     setResultadosMetodos([])
   };
 
-  const handleGraphGenerated = (connections: number[][]) => {
+  const handleGrafoGerado = (connections: number[][]) => {
     setConexoes(connections)
-    if (shouldSaveGraph) {
-      saveGraphToFile(connections)
-      setShouldSaveGraph(false)
+    if (deveSalvarGrafo) {
+      salvarGrafoArquivo(connections)
+      setDeveSalvarGrafo(false)
     }
   }
 
-  const saveGraphToFile = async (connections: number[][]) => {
+  const salvarGrafoArquivo = async (connections: number[][]) => {
     if (!tamanhoProblemaAtual) return
     
     try {
@@ -77,7 +77,7 @@ export default function MetodosBasicos() {
   }
 
   // Funções auxiliares
-  const shuffleArray = (array: any[]) => {
+  const embaralharArray = (array: any[]) => {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [array[i], array[j]] = [array[j], array[i]]
@@ -96,7 +96,7 @@ export default function MetodosBasicos() {
     try {
       // Gera estado inicial aleatório
       const estadoInicial = Array(tamanhoProblemaAtual).fill(0).map((_, i) => i);
-      const estadoEmbaralhado = shuffleArray([...estadoInicial]);
+      const estadoEmbaralhado = embaralharArray([...estadoInicial]);
 
     switch (metodoSelecionado) {
         case 'Subida de Encosta':
@@ -164,13 +164,13 @@ export default function MetodosBasicos() {
                   inputMode="numeric"
                   min="2"
                   max="20"
-                  value={inputValue}
-                  onChange={handleInputChange}
+                  value={valorInput}
+                  onChange={handleMudancaInput}
                   onBlur={() => {
-                    let correctedValue = Number(inputValue);
+                    let correctedValue = Number(valorInput);
                     if (isNaN(correctedValue) || correctedValue < 2) correctedValue = 2;
                     if (correctedValue > 20) correctedValue = 20;
-                    setInputValue(correctedValue.toString());
+                    setValorInput(correctedValue.toString());
                   }}
                   className="px-3 py-2 w-20 border rounded"
                 />
@@ -239,7 +239,7 @@ export default function MetodosBasicos() {
               <div className="w-full h-full">
                 <VisualizacaoGrafo 
                   nodeCount={tamanhoProblemaAtual} 
-                  onGraphGenerated={handleGraphGenerated}
+                  onGraphGenerated={handleGrafoGerado}
                 />
               </div>
             ) : (
