@@ -3,6 +3,7 @@ import VisualizacaoGrafo from '@/components/visualizacao-grafo'
 import { subidaEncosta } from '@/components/metodos-otimizacao/subida-encosta'
 import { subidaEncostaAlterada } from '@/components/metodos-otimizacao/subida-encosta-alterada'
 import { temperaSimulada } from '@/components/metodos-otimizacao/tempera-simulada'
+import { gerarRelatorioPDF } from '@/utils/gerar-pdf'
 
 type ResultadoMetodo = {
   metodo: string
@@ -18,7 +19,6 @@ export default function MetodosBasicos() {
   const [resultados, setResultados] = useState<string | null>(null)
   const [grafoGerado, setGrafoGerado] = useState<boolean>(false)
   const [conexoes, setConexoes] = useState<number[][]>([])
-  const [deveSalvarGrafo, setDeveSalvarGrafo] = useState(false)
   const [metodoSelecionado, setMetodoSelecionado] = useState<string>('')
   const [resultadosMetodos, setResultadosMetodos] = useState<ResultadoMetodo[]>([])
   const [executando, setExecutando] = useState<boolean>(false)
@@ -35,83 +35,53 @@ export default function MetodosBasicos() {
   }
 
   const handleGerarProblema = () => {
-    const finalValue = Math.min(20, Math.max(2, Number(valorInput) || 5))
-    setTamanhoProblemaAtual(finalValue)
-    setResultados(`Problema gerado com ${finalValue} nós`)
+    const valorNumerico = Number(valorInput) || 5
+    const valorFinal = Math.min(20, Math.max(2, valorNumerico))
+    setTamanhoProblemaAtual(valorFinal)
+    setResultados(`Problema gerado com ${valorFinal} nós`)
     setGrafoGerado(true)
-    setDeveSalvarGrafo(true)
     setResultadosMetodos([])
-  };
-
-  const handleGrafoGerado = (connections: number[][]) => {
-    setConexoes(connections)
-    if (deveSalvarGrafo) {
-      salvarGrafoArquivo(connections)
-      setDeveSalvarGrafo(false)
-    }
   }
 
-  const salvarGrafoArquivo = async (connections: number[][]) => {
-    if (!tamanhoProblemaAtual) return
-    
-    try {
-      const response = await fetch('/api/save-graph', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          nodeCount: tamanhoProblemaAtual,
-          connections
-        })
-      })
-      
-      const data = await response.json()
-      if (response.ok) {
-        console.log('Arquivo salvo com sucesso em:', data.path)
-      }
-    } catch (error) {
-      console.error('Erro ao salvar arquivo:', error)
-      setResultados(prev => `${prev}\nErro ao salvar arquivo`)
-    }
+  const handleGrafoGerado = (conexoesGeradas: number[][]) => {
+    setConexoes(conexoesGeradas)
   }
 
-  // Funções auxiliares
-  const embaralharArray = (array: any[]) => {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]]
+  const embaralharArray = <T,>(array: T[]): T[] => {
+    const novoArray = [...array]
+    for (let i = novoArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[novoArray[i], novoArray[j]] = [novoArray[j], novoArray[i]]
     }
-    return array
+    return novoArray
   }
 
   const handleExecutarMetodo = async () => {
-    if (!metodoSelecionado || !grafoGerado || !tamanhoProblemaAtual || conexoes.length === 0) return;
+    if (!metodoSelecionado || !grafoGerado || !tamanhoProblemaAtual || conexoes.length === 0) return
     
-    setExecutando(true);
-    setResultados(`Executando ${metodoSelecionado}...`);
+    setExecutando(true)
+    setResultados(`Executando ${metodoSelecionado}...`)
     
-    let resultado: ResultadoMetodo;
+    let resultado: ResultadoMetodo
     
     try {
-      // Gera estado inicial aleatório
-      const estadoInicial = Array(tamanhoProblemaAtual).fill(0).map((_, i) => i);
-      const estadoEmbaralhado = embaralharArray([...estadoInicial]);
+      const estadoInicial = Array(tamanhoProblemaAtual).fill(0).map((_, i) => i)
+      const estadoEmbaralhado = embaralharArray([...estadoInicial])
 
-    switch (metodoSelecionado) {
+      switch (metodoSelecionado) {
         case 'Subida de Encosta':
           const resultadoSE = await subidaEncosta(conexoes, estadoInicial)
           resultado = {
             metodo: 'Subida de Encosta',
-            ...resultadoSE
+            solucao: resultadoSE.solucao,
+            custo: resultadoSE.custo,
+            iteracoes: resultadoSE.iteracoes,
+            tempoExecucao: resultadoSE.tempoExecucao
           }
           break
-        case 'Subida de Encosta Alterada':
-          const resultadoSEA = await subidaEncostaAlterada(
-            conexoes, 
-            estadoEmbaralhado
-          )
           
+        case 'Subida de Encosta Alterada':
+          const resultadoSEA = await subidaEncostaAlterada(conexoes, estadoEmbaralhado)
           resultado = {
             metodo: 'Subida de Encosta Alterada',
             solucao: resultadoSEA.solucao,
@@ -120,6 +90,7 @@ export default function MetodosBasicos() {
             tempoExecucao: resultadoSEA.tempoExecucao || 0
           }
           break
+          
         case 'Têmpera Simulada':
           const resultadoTS = await temperaSimulada(conexoes, estadoInicial)
           resultado = {
@@ -130,6 +101,7 @@ export default function MetodosBasicos() {
             tempoExecucao: resultadoTS.tempoExecucao
           }
           break
+          
         default:
           throw new Error('Método não implementado')
       }
@@ -138,11 +110,20 @@ export default function MetodosBasicos() {
       setResultados(`${metodoSelecionado} concluído com sucesso!`)
     } catch (error) {
       console.error(error)
-      const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro desconhecido'
-      setResultados(`Erro ao executar ${metodoSelecionado}: ${errorMessage}`)
+      const mensagemErro = error instanceof Error ? error.message : 'Ocorreu um erro desconhecido'
+      setResultados(`Erro ao executar ${metodoSelecionado}: ${mensagemErro}`)
     } finally {
       setExecutando(false)
     }
+  }
+
+  const handleGerarRelatorio = () => {
+    if (resultadosMetodos.length === 0 || !tamanhoProblemaAtual) {
+      setResultados('Nenhum resultado disponível para gerar relatório')
+      return
+    }
+    gerarRelatorioPDF(resultadosMetodos, tamanhoProblemaAtual)
+    setResultados('Relatório gerado com sucesso!')
   }
 
   return (
@@ -167,10 +148,9 @@ export default function MetodosBasicos() {
                   value={valorInput}
                   onChange={handleMudancaInput}
                   onBlur={() => {
-                    let correctedValue = Number(valorInput);
-                    if (isNaN(correctedValue) || correctedValue < 2) correctedValue = 2;
-                    if (correctedValue > 20) correctedValue = 20;
-                    setValorInput(correctedValue.toString());
+                    const valorNumerico = Number(valorInput) || 5
+                    const valorCorrigido = Math.min(20, Math.max(2, valorNumerico))
+                    setValorInput(valorCorrigido.toString())
                   }}
                   className="px-3 py-2 w-20 border rounded"
                 />
@@ -184,10 +164,9 @@ export default function MetodosBasicos() {
               Gerar Problema
             </button>
             
-            {/* Área de Resultados */}
             {resultados && (
-              <div>
-                <label className="text-blue-600">{resultados}</label>
+              <div className="text-blue-600">
+                {resultados}
               </div>
             )}
             
@@ -195,7 +174,7 @@ export default function MetodosBasicos() {
               <select
                 value={metodoSelecionado}
                 onChange={(e) => setMetodoSelecionado(e.target.value)}
-                className="px-3 py-2 cursor-pointer border rounded"
+                className="px-3 py-2 border rounded cursor-pointer"
                 disabled={!grafoGerado || executando}
               >
                 <option value="">Selecione um método</option>
@@ -203,6 +182,7 @@ export default function MetodosBasicos() {
                 <option value="Subida de Encosta Alterada">Subida de Encosta Alterada</option>
                 <option value="Têmpera Simulada">Têmpera Simulada</option>
               </select>
+              
               <button 
                 onClick={handleExecutarMetodo}
                 disabled={!metodoSelecionado || !grafoGerado || executando}
@@ -212,9 +192,18 @@ export default function MetodosBasicos() {
               >
                 {executando ? 'Executando...' : 'Executar Método'}
               </button>
+
+              <button 
+                onClick={handleGerarRelatorio}
+                disabled={resultadosMetodos.length === 0}
+                className={`px-4 py-2 rounded ${
+                  resultadosMetodos.length === 0
+                }`}
+              >
+                Gerar Relatório PDF
+              </button>
             </div>
 
-            {/* Resultados dos Métodos */}
             {resultadosMetodos.length > 0 && (
               <div>
                 <h4 className="font-bold mb-2">Resultados dos Métodos:</h4>
@@ -225,7 +214,7 @@ export default function MetodosBasicos() {
                       <p>Solução: {resultado.solucao.join(' → ')} → {resultado.solucao[0]}</p>
                       <p>Custo total: {resultado.custo.toFixed(2)}</p>
                       <p>Iterações: {resultado.iteracoes}</p>
-                      <p>Tempo de execução: {resultado.tempoExecucao.toFixed(2)} ms</p>
+                      <p>Tempo: {resultado.tempoExecucao.toFixed(2)} ms</p>
                     </div>
                   ))}
                 </div>
