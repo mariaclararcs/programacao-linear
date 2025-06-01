@@ -18,7 +18,7 @@
   * Sobre o Sistema: para informações sobre o projeto
 
 5. Observações:
-- As funcionalidades de Métodos Básicos e Algoritmos Genéticos estarão desabilitadas nesta versão
+- A funcionalidadesde Algoritmos Genéticos estará desabilitada nesta versão
 - O tamanho padrão do problema é 5 nós
 
 ---
