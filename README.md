@@ -15,7 +15,7 @@
 ▶️ **Como executar:**
 
 - No terminal na pasta do projeto execute: npm run dev ou yarn dev
-- Acesse: (http://localhost:3000 no navegador)
+- Acesse: (http://localhost:3000) no navegador
 
 - Na tela principal, selecione uma das opções:
   * Métodos Básicos: para gerar problemas de otimização de rotas
