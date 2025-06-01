@@ -28,7 +28,7 @@
 
 **Observações:**
 
-- A funcionalidadesde Algoritmos Genéticos estará desabilitada nesta versão
+- A funcionalidad de **Algoritmos Genéticos** estará desabilitada nesta versão
 - O tamanho padrão do problema é 5 nós
 
 ---
