@@ -1,130 +1,133 @@
-import React, { useState } from "react"
-import VisualizacaoGrafo from "@/components/visualizacao-grafo"
-import CaixeiroViajante from "@/components/algoritmo-genetico/caixeiro-viajante"
-import { GeneticAlgorithmResult } from "@/types/algoritmo-genetico"
+import React, { useState } from "react";
+import VisualizacaoGrafo from "@/components/visualizacao-grafo";
+import CaixeiroViajante from "@/components/algoritmo-genetico/caixeiro-viajante";
+import { GeneticAlgorithmResult } from "@/types/algoritmo-genetico";
 
 interface ProblemaConfig {
-  tamanhoProblema: number
-  tamanhoPopulacao: number
-  taxaCruzamento: number
-  taxaMutacao: number
-  numeroGeracoes: number
-  intervaloGeracao: number
-  conexoes: number[][]
+  tamanhoProblema: number;
+  tamanhoPopulacao: number;
+  taxaCruzamento: number;
+  taxaMutacao: number;
+  numeroGeracoes: number;
+  intervaloGeracao: number;
+  conexoes: number[][];
 }
 
 export default function AlgoritmosGeneticos() {
-    const [valorInput, setValorInput] = useState<string>('5')
-    const [tamanhoPopulacao, setTamanhoPopulacao] = useState<string>('30')    // TP = 30
-    const [taxaCruzamento, setTaxaCruzamento] = useState<string>('0.9')       // TC = 0.9
-    const [taxaMutacao, setTaxaMutacao] = useState<string>('0.1')             // TM = 0.1
-    const [numeroGeracoes, setNumeroGeracoes] = useState<string>('100')       // NG = 100
-    const [intervaloGeracao, setIntervaloGeracao] = useState<string>('20')    // IG = 0.2
-    const [resultados, setResultados] = useState<string | null>(null)
-    const [grafoGerado, setGrafoGerado] = useState<boolean>(false)
-    const [conexoes, setConexoes] = useState<number[][]>([])
-    const [problemaConfig, setProblemaConfig] = useState<ProblemaConfig | null>(null)
-    const [executando, setExecutando] = useState<boolean>(false)
-    const [resultado, setResultado] = useState<GeneticAlgorithmResult | null>(null)
+    const [valorInput, setValorInput] = useState<string>('5');
+    const [tamanhoPopulacao, setTamanhoPopulacao] = useState<string>('30');
+    const [taxaCruzamento, setTaxaCruzamento] = useState<string>('0.9');
+    const [taxaMutacao, setTaxaMutacao] = useState<string>('0.1');
+    const [numeroGeracoes, setNumeroGeracoes] = useState<string>('100');
+    const [intervaloGeracao, setIntervaloGeracao] = useState<string>('20');
+    const [resultados, setResultados] = useState<string | null>(null);
+    const [grafoGerado, setGrafoGerado] = useState<boolean>(false);
+    const [conexoes, setConexoes] = useState<number[][]>([]);
+    const [problemaConfig, setProblemaConfig] = useState<ProblemaConfig | null>(null);
+    const [executando, setExecutando] = useState<boolean>(false);
+    const [resultado, setResultado] = useState<GeneticAlgorithmResult | null>(null);
 
-    const MIN_DISTANCE = 10  // Valor mínimo para conexões
-    const MAX_DISTANCE = 100 // Valor máximo para conexões
+    const MIN_DISTANCE = 10;
+    const MAX_DISTANCE = 100;
 
     const handleMudancaInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value
+        const value = e.target.value;
         if (value === '' || /^[0-9\b]+$/.test(value)) {
-            setValorInput(value)
+            setValorInput(value);
             if (grafoGerado) {
-                setGrafoGerado(false)
+                setGrafoGerado(false);
             }
         }
-    }
+    };
 
     const handleParametroNumerico = (value: string, setter: React.Dispatch<React.SetStateAction<string>>, isFloat = false) => {
         if (value === '' || (isFloat ? /^[0-9]*\.?[0-9]*$/.test(value) : /^[0-9\b]+$/.test(value))) {
-            setter(value)
+            setter(value);
             if (grafoGerado) {
-                setGrafoGerado(false)
+                setGrafoGerado(false);
             }
         }
-    }
+    };
 
-    const handleGerarProblema = () => {
-        // Validação e conversão dos valores
+    const handleGerarGrafo = () => {
         const tamanhoProblema = Math.min(20, Math.max(2, Number(valorInput) || 5))
-        const popSize = Math.max(10, Number(tamanhoPopulacao) || 30)          // TP padrão 30
-        const crossoverRate = Math.min(1, Math.max(0, Number(taxaCruzamento) || 0.9))  // TC padrão 0.9
-        const mutationRate = Math.min(1, Math.max(0, Number(taxaMutacao) || 0.1))      // TM padrão 0.1
-        const generations = Math.max(1, Number(numeroGeracoes) || 100)        // NG padrão 100
-        const generationInterval = Math.max(1, Number(intervaloGeracao) || 20) // IG padrão 20
-
-        // Atualiza os campos com os valores validados
-        setValorInput(tamanhoProblema.toString())
-        setTamanhoPopulacao(popSize.toString())
-        setTaxaCruzamento(crossoverRate.toString())
-        setTaxaMutacao(mutationRate.toString())
-        setNumeroGeracoes(generations.toString())
-        setIntervaloGeracao(generationInterval.toString())
-
-        // Configura o problema completo
+        setValorInput(tamanhoProblema.toString());
+        
         const config: ProblemaConfig = {
             tamanhoProblema,
-            tamanhoPopulacao: popSize,
-            taxaCruzamento: crossoverRate,
-            taxaMutacao: mutationRate,
-            numeroGeracoes: generations,
-            intervaloGeracao: generationInterval,
+            tamanhoPopulacao: 0,
+            taxaCruzamento: 0,
+            taxaMutacao: 0,
+            numeroGeracoes: 0,
+            intervaloGeracao: 0,
             conexoes: []
-        }
+        };
 
-        setProblemaConfig(config)
-        setGrafoGerado(true)
-        setResultados(`Problema gerado com:
-        - ${tamanhoProblema} nós
-        - População: ${popSize}
-        - Cruzamento: ${(crossoverRate * 100).toFixed(0)}%
-        - Mutação: ${(mutationRate * 100).toFixed(0)}%
-        - Gerações: ${generations}
-        - Intervalo: ${generationInterval}`)
-    }
+        setProblemaConfig(config);
+        setGrafoGerado(true);
+        setResultados(`Grafo gerado com ${tamanhoProblema} nós`);
+        setResultado(null);
+    };
 
     const handleGrafoGerado = (conexoesGeradas: number[][]) => {
-        const n = conexoesGeradas.length
+        const n = conexoesGeradas.length;
         const matrizCustos = Array.from({ length: n }, (_, i) => 
             Array.from({ length: n }, (_, j) => {
-                if (i === j) return 0 // Diagonal principal = 0
-                // Gera valores aleatórios entre MIN_DISTANCE e MAX_DISTANCE
-                return Math.floor(Math.random() * (MAX_DISTANCE - MIN_DISTANCE + 1)) + MIN_DISTANCE
+                if (i === j) return 0;
+                return Math.floor(Math.random() * (MAX_DISTANCE - MIN_DISTANCE + 1)) + MIN_DISTANCE;
             })
-        )
+        );
 
-        // Garante simetria (A→B = B→A)
         for (let i = 0; i < n; i++) {
             for (let j = i + 1; j < n; j++) {
-                matrizCustos[j][i] = matrizCustos[i][j]
+                matrizCustos[j][i] = matrizCustos[i][j];
             }
         }
 
-        setConexoes(matrizCustos)
+        setConexoes(matrizCustos);
         if (problemaConfig) {
             setProblemaConfig({
                 ...problemaConfig,
                 conexoes: matrizCustos
-            })
+            });
         }
-    }
+    };
 
-    const handleExecutarAlgoritmo = async () => {
-        if (!problemaConfig || !grafoGerado) return
-        
-        // Validação adicional
-        if (problemaConfig.conexoes.some(row => row.some(val => typeof val !== 'number' || isNaN(val)))) {
-            setResultados('Erro: Matriz de custos inválida')
-            return
+    const handleSalvarConfiguracoes = () => {
+        if (!problemaConfig) return;
+
+        const popSize = Math.max(10, Number(tamanhoPopulacao) || 30)
+        const crossoverRate = Math.min(1, Math.max(0, Number(taxaCruzamento) || 0.9))
+        const mutationRate = Math.min(1, Math.max(0, Number(taxaMutacao) || 0.1))
+        const generations = Math.max(1, Number(numeroGeracoes) || 100)
+        const generationInterval = Math.max(1, Number(intervaloGeracao) || 20)
+
+        const configAtualizado = {
+            ...problemaConfig,
+            tamanhoPopulacao: popSize,
+            taxaCruzamento: crossoverRate,
+            taxaMutacao: mutationRate,
+            numeroGeracoes: generations,
+            intervaloGeracao: generationInterval
+        };
+
+        setProblemaConfig(configAtualizado);
+        setResultados(`Configurações do algoritmo salvas:
+        - Tamanho da população: ${popSize}
+        - Taxa de cruzamento: ${(crossoverRate * 100).toFixed(0)}%
+        - Taxa de mutação: ${(mutationRate * 100).toFixed(0)}%
+        - Número de gerações: ${generations}
+        - Intervalo: ${generationInterval}`);
+    };
+
+    const handleAnalisarAG = async () => {
+        if (!problemaConfig || !grafoGerado || problemaConfig.conexoes.length === 0) {
+            setResultados('Erro: Configure o grafo e os parâmetros primeiro');
+            return;
         }
 
-        setExecutando(true)
-        setResultados('Executando algoritmo genético...')
+        setExecutando(true);
+        setResultados('Executando análise com Algoritmo Genético...');
         
         try {
             const resultado = await CaixeiroViajante.executar(
@@ -135,19 +138,21 @@ export default function AlgoritmosGeneticos() {
                 problemaConfig.taxaMutacao,
                 problemaConfig.intervaloGeracao,
                 (progress) => {
-                    setResultados(`Executando... Geração ${progress.generation}, Melhor Custo: ${progress.bestCost.toFixed(2)}`)
+                    setResultados(`Processando... Geração ${progress.generation}, Melhor Custo: ${progress.bestCost.toFixed(2)}`);
                 }
-            )
+            );
             
-            setResultado(resultado)
-            setResultados(`Algoritmo concluído! Melhor custo encontrado: ${resultado.finalCost.toFixed(2)} (inicial: ${resultado.initialCost.toFixed(2)})`)
+            setResultado(resultado);
+            setResultados(`Análise concluída!
+            Melhor custo encontrado: ${resultado.finalCost.toFixed(2)}
+            Custo inicial: ${resultado.initialCost.toFixed(2)}`);
         } catch (error) {
-            console.error(error)
-            setResultados('Erro ao executar o algoritmo genético')
+            console.error(error);
+            setResultados('Erro durante a execução do Algoritmo Genético');
         } finally {
-            setExecutando(false)
+            setExecutando(false);
         }
-    }
+    };
 
     return (
         <div className="min-h-screen flex flex-col py-4">
@@ -179,6 +184,14 @@ export default function AlgoritmosGeneticos() {
                                 />
                             </div>
                         </div>
+
+                        <button 
+                            onClick={handleGerarGrafo}
+                            className="px-4 py-2"
+                            disabled={executando}
+                        >
+                            Gerar Problema
+                        </button>
 
                         {/* Configuração do Algoritmo Genético */}
                         <div className="space-y-4">
@@ -264,43 +277,60 @@ export default function AlgoritmosGeneticos() {
                             </div>
                         </div>
 
-                        <button 
-                            onClick={handleGerarProblema}
+                        <button
+                            onClick={handleSalvarConfiguracoes}
                             className="px-4 py-2"
+                            disabled={!grafoGerado || executando}
                         >
-                            Gerar Problema
+                            Executar AG
                         </button>
 
                         {resultados && (
-                            <div className="text-blue-600 whitespace-pre-line">
-                                {resultados}
+                            <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                                <p className="whitespace-pre-line text-gray-800">{resultados}</p>
                             </div>
                         )}
                         
                         <button
-                            onClick={handleExecutarAlgoritmo}
+                            onClick={handleAnalisarAG}
                             className="px-4 py-2"
-                            disabled={!grafoGerado || !problemaConfig || executando}
+                            disabled={!grafoGerado || !problemaConfig || problemaConfig.tamanhoPopulacao === 0 || executando}
                         >
-                            {executando ? 'Executando...' : 'Executar Algoritmo Genético'}
+                            {executando ? 'Analisando...' : 'Analisar AG'}
                         </button>
 
                         {resultado && (
-                            <div className="p-3 border rounded bg-gray-50">
-                                <h5 className="font-semibold">Resultado</h5>
-                                <div className="mt-2 text-sm space-y-2">
-                                    <p><strong>Matriz de custos:</strong> {problemaConfig?.tamanhoProblema}x{problemaConfig?.tamanhoProblema}</p>
-                                    <p><strong>Solução Inicial:</strong> 
-                                        {resultado.initialSolution.map(n => n + 1).join(' → ')} → {resultado.initialSolution[0] + 1}
-                                    </p>
-                                    <p><strong>Custo Inicial:</strong> {isFinite(resultado.initialCost) ? resultado.initialCost.toFixed(2) : 'Inválido'}</p>
-                                    <p><strong>Melhor Solução:</strong> 
-                                        {resultado.finalSolution.map(n => n + 1).join(' → ')} → {resultado.finalSolution[0] + 1}
-                                    </p>
-                                    <p><strong>Melhor Custo:</strong> {isFinite(resultado.finalCost) ? resultado.finalCost.toFixed(2) : 'Inválido'}</p>
-                                    {isFinite(resultado.initialCost) && isFinite(resultado.finalCost) && (
-                                        <p><strong>Melhoria:</strong> {((resultado.initialCost - resultado.finalCost) / resultado.initialCost * 100).toFixed(2)}%</p>
-                                    )}
+                            <div className="p-4 border rounded bg-white shadow">
+                                <h5 className="font-semibold text-lg mb-2">Resultado da Análise</h5>
+                                <div className="grid grid-cols-1 gap-2">
+                                    <div>
+                                        <span className="font-medium">Solução Inicial:</span>
+                                        <p className="bg-gray-50 p-2 rounded">
+                                            {resultado.initialSolution.map(n => n + 1).join(' → ')} → {resultado.initialSolution[0] + 1}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <span className="font-medium">Melhor Solução:</span>
+                                        <p className="bg-gray-50 p-2 rounded">
+                                            {resultado.finalSolution.map(n => n + 1).join(' → ')} → {resultado.finalSolution[0] + 1}
+                                        </p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <span className="font-medium">Custo Inicial:</span>
+                                            <p>{resultado.initialCost.toFixed(2)}</p>
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">Melhor Custo:</span>
+                                            <p>{resultado.finalCost.toFixed(2)}</p>
+                                        </div>
+                                    </div>
+                                    <div className="bg-blue-50 p-2 rounded text-center">
+                                        <span className="font-medium">Melhoria:</span>
+                                        <p className="text-blue-600 font-bold">
+                                            {((resultado.initialCost - resultado.finalCost) / resultado.initialCost * 100).toFixed(2)}%
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -316,7 +346,10 @@ export default function AlgoritmosGeneticos() {
                                 />
                             </div>
                         ) : (
-                            <p className="text-gray-500">Clique em Gerar Problema para visualizar o grafo</p>
+                            <div className="text-center p-8">
+                                <p className="text-gray-500 text-lg mb-4">Nenhum grafo gerado</p>
+                                <p className="text-gray-400">Clique em Gerar Problema para criar um novo grafo</p>
+                            </div>
                         )}
                     </div>
                 </div>
