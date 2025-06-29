@@ -15,6 +15,8 @@
 ▶️ **Como executar:**
 
 No terminal na pasta do projeto execute: npm run dev ou yarn dev
+
+
 Acesse: (http://localhost:3000) no navegador
 
 
