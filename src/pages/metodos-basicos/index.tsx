@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
-import VisualizacaoGrafo from '@/components/visualizacao-grafo'
-import { subidaEncosta } from '@/components/metodos-otimizacao/subida-encosta'
-import { subidaEncostaAlterada } from '@/components/metodos-otimizacao/subida-encosta-alterada'
-import { temperaSimulada } from '@/components/metodos-otimizacao/tempera-simulada'
-import { gerarRelatorioPDF } from '@/utils/gerar-pdf'
+import React, { useState } from "react"
+import VisualizacaoGrafo from "@/components/visualizacao-grafo"
+import { subidaEncosta } from "@/components/metodos-otimizacao/subida-encosta"
+import { subidaEncostaAlterada } from "@/components/metodos-otimizacao/subida-encosta-alterada"
+import { temperaSimulada } from "@/components/metodos-otimizacao/tempera-simulada"
+import { gerarRelatorioPDF } from "@/utils/gerar-pdf"
 
 type ResultadoMetodo = {
   metodo: string
@@ -211,7 +211,7 @@ export default function MetodosBasicos() {
                   {resultadosMetodos.map((resultado, index) => (
                     <div key={index} className="p-3 border rounded bg-gray-50">
                       <h5 className="font-semibold">{resultado.metodo}</h5>
-                      <p>Solução: {resultado.solucao.join(' → ')} → {resultado.solucao[0]}</p>
+                      <p>Solução: {resultado.solucao.map(n => n + 1).join(' → ')} → {resultado.solucao[0]+ 1}</p>
                       <p>Custo total: {resultado.custo.toFixed(2)}</p>
                       <p>Iterações: {resultado.iteracoes}</p>
                       <p>Tempo: {resultado.tempoExecucao.toFixed(2)} ms</p>

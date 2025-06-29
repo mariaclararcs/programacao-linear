@@ -13,7 +13,7 @@ export default function Home() {
         <h3 className="text-center">Projeto - Programação Linear</h3>
         <div className="flex flex-col items-center justify-center justify-items-center gap-6 my-2">
           <Link href="/metodos-basicos"><button className="min-w-sm">Métodos Básicos</button></Link>
-          <Link href="/"><button className="min-w-sm text-gray-700">Algoritmos Genéticos (desabilitado)</button></Link>
+          <Link href="/algoritmos-geneticos"><button className="min-w-sm">Algoritmos Genéticos</button></Link>
           <Link href="/sobre-sistema"><button className="min-w-sm">Sobre o Sistema</button></Link>
         </div>
       </main>
