@@ -14,22 +14,34 @@
 
 ▶️ **Como executar:**
 
-- No terminal na pasta do projeto execute: npm run dev ou yarn dev
-- Acesse: (http://localhost:3000) no navegador
+No terminal na pasta do projeto execute: npm run dev ou yarn dev
+Acesse: (http://localhost:3000) no navegador
 
-- Na tela principal, selecione uma das opções:
+
+Na tela principal, selecione uma das opções:
   * Métodos Básicos: para gerar problemas de otimização de rotas
+  * Algoritmos Genéticos: para executar o algoritmo do Caixeiro Viajante
   * Sobre o Sistema: para informações sobre o projeto
-- Insira um valor para a quantidade de nós no campo **Tamanho do Problema**.
+
+
+Na tela **Métodos Básicos**:
+- Insira um valor para **Tamanho do Problema** (ou mantenha o valor padrão).
 - Clique em **Gerar Problema** para visualizar o grafo gerado.
 - Escolha um método no campo **Selecione um método**.
 - Clique em **Executar Método** para exibir os resultados.
 - Para gerar e baixar o relatório dos resultados, clique em **Gerar Relatório PDF**.
 
-**Observações:**
 
-- A funcionalidade de **Algoritmos Genéticos** estará desabilitada nesta versão
-- O tamanho padrão do problema é 5 nós
+Na tela **Algoritmos Genéticos**:
+- Insira um valor para **Tamanho do Problema** (ou mantenha o valor padrão).
+- Insira um valor para **Tamanho da População** (ou mantenha o valor padrão).
+- Insira um valor para **Taxa de Cruzamento** (ou mantenha o valor padrão).
+- Insira um valor para **Taxa de Mutação** (ou mantenha o valor padrão).
+- Insira um valor para **Número de Gerações** (ou mantenha o valor padrão).
+- Insira um valor para **Intervalo de Geração** (ou mantenha o valor padrão).
+- Clique em **Gerar Problema** para visualizar o grafo gerado e confirmar as informações inseridas.
+- Clique em **Executar Algoritmo Genético** para exibir os resultados.
+
 
 ---
 
